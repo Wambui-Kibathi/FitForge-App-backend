@@ -19,15 +19,22 @@ def seed_data():
             db.session.add(instructor)
         
         # Create users (F1 drivers as app users)
-        users = [
-            User(name="Admin User", email="admin@fitforge.com", fitness_level="Advanced", is_admin=True),
-            User(name="Lewis Hamilton", email="lewis.hamilton@fitforge.com", fitness_level="Advanced"),
-            User(name="Max Verstappen", email="max.verstappen@fitforge.com", fitness_level="Advanced"),
-            User(name="Charles Leclerc", email="charles.leclerc@fitforge.com", fitness_level="Intermediate"),
-            User(name="Lando Norris", email="lando.norris@fitforge.com", fitness_level="Intermediate")
+        users_data = [
+            {"name": "Admin User", "email": "admin@fitforge.com", "fitness_level": "Advanced", "is_admin": True},
+            {"name": "Lewis Hamilton", "email": "lewis.hamilton@fitforge.com", "fitness_level": "Advanced"},
+            {"name": "Max Verstappen", "email": "max.verstappen@fitforge.com", "fitness_level": "Advanced"},
+            {"name": "Charles Leclerc", "email": "charles.leclerc@fitforge.com", "fitness_level": "Intermediate"},
+            {"name": "Lando Norris", "email": "lando.norris@fitforge.com", "fitness_level": "Intermediate"}
         ]
         
-        for user in users:
+        for user_data in users_data:
+            user = User(
+                name=user_data["name"],
+                email=user_data["email"],
+                fitness_level=user_data["fitness_level"],
+                is_admin=user_data.get("is_admin", False)
+            )
+            user.set_password("password123")
             db.session.add(user)
         
         # Create exercises by instructors

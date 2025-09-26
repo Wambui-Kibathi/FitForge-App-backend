@@ -82,11 +82,14 @@ class WorkoutListResource(Resource):
             return {'error': str(e)}, 500
     
     def post(self):
+        if 'user_id' not in session:
+            return {'error': 'Not logged in'}, 401
         try:
             data = request.get_json()
             if 'instructor_id' not in data:
                 return {'error': 'instructor_id is required'}, 400
             
+            data['user_id'] = session['user_id']  # Force current user for personal workouts
             workout = Workout(**data)
             db.session.add(workout)
             db.session.commit()
@@ -148,17 +151,23 @@ class WorkoutExerciseResource(Resource):
 # UserExercise Resources
 class UserExerciseListResource(Resource):
     def get(self):
+        if 'user_id' not in session:
+            return {'error': 'Not logged in'}, 401
         try:
-            user_exercises = UserExercise.query.all()
+            user_exercises = UserExercise.query.filter_by(user_id=session['user_id']).all()
             return [ue.to_dict() for ue in user_exercises]
         except Exception as e:
             return {'error': str(e)}, 500
     
     def post(self):
+        if 'user_id' not in session:
+            return {'error': 'Not logged in'}, 401
         try:
             data = request.get_json()
+            data['user_id'] = session['user_id']  # Force current user
+            
             existing = UserExercise.query.filter_by(
-                user_id=data['user_id'], 
+                user_id=session['user_id'], 
                 exercise_id=data['exercise_id']
             ).first()
             
@@ -228,7 +237,7 @@ class InstructorResource(Resource):
 def register():
     try:
         data = request.get_json()
-        if not data or not all(k in data for k in ['name', 'email', 'fitness_level']):
+        if not data or not all(k in data for k in ['name', 'email', 'password', 'fitness_level']):
             return {'error': 'Missing required fields'}, 400
             
         existing_user = User.query.filter_by(email=data['email']).first()
@@ -240,6 +249,7 @@ def register():
             email=data['email'],
             fitness_level=data['fitness_level']
         )
+        user.set_password(data['password'])
         db.session.add(user)
         db.session.commit()
         session['user_id'] = user.id
@@ -251,11 +261,14 @@ def register():
 def login():
     try:
         data = request.get_json()
+        if not data or not all(k in data for k in ['email', 'password']):
+            return {'error': 'Missing email or password'}, 400
+            
         user = User.query.filter_by(email=data['email']).first()
-        if user:
+        if user and user.check_password(data['password']):
             session['user_id'] = user.id
             return user.to_dict()
-        return {'error': 'User not found'}, 404
+        return {'error': 'Invalid email or password'}, 401
     except Exception as e:
         return {'error': str(e)}, 400
 

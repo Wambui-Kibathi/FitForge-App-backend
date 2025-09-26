@@ -12,7 +12,6 @@ flask-restful = "*"
 sqlalchemy-serializer = "*"
 python-dotenv = "*"
 gunicorn = "*"
-flask-bcrypt = "*"
 
 [dev-packages]
 
