@@ -228,6 +228,9 @@ class InstructorResource(Resource):
 def register():
     try:
         data = request.get_json()
+        if not data or not all(k in data for k in ['name', 'email', 'fitness_level']):
+            return {'error': 'Missing required fields'}, 400
+            
         existing_user = User.query.filter_by(email=data['email']).first()
         if existing_user:
             return {'error': 'User already exists'}, 400
@@ -242,6 +245,7 @@ def register():
         session['user_id'] = user.id
         return user.to_dict(), 201
     except Exception as e:
+        db.session.rollback()
         return {'error': str(e)}, 400
 
 def login():
