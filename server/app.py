@@ -27,7 +27,7 @@ app.config['SESSION_COOKIE_SECURE'] = True  # HTTPS required for production
 db.init_app(app)
 migrate = Migrate(app, db)
 api = Api(app)
-CORS(app, supports_credentials=True, origins=['http://localhost:5173'])
+CORS(app, supports_credentials=True, origins=['http://localhost:5173', 'https://fitforge-app.onrender.com'])
 
 # Authentication routes
 app.add_url_rule('/register', 'register', register, methods=['POST'])
